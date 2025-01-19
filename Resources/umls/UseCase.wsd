@@ -1,0 +1,28 @@
+@startuml
+actor User
+participant frontend
+participant CalculateCorner
+participant PointMapper
+participant CameraCalibrate
+participant ImageUndistort
+
+
+frontend -> CalculateCorner : SetImagePath()
+frontend -> CalculateCorner : SetBoardSize()
+CalculateCorner -> CalculateCorner : CalculateImageCorners()
+CalculateCorner -> frontend : 绘制找到角点的图像(可选)
+CalculateCorner -> frontend : 提供角点的像素坐标
+
+CalculateCorner -> PointMapper : 提供角点数据
+PointMapper -> PointMapper : GenerateRealWorldPoints()
+PointMapper -> CameraCalibrate : 提供世界坐标和像素坐标
+PointMapper -> frontend : 提供世界坐标
+PointMapper -> CameraCalibrate : 提供判断特征点数量匹配的方法
+
+CameraCalibrate -> CameraCalibrate : 计算标定参数
+CameraCalibrate -> ImageUndistort : 提供相机参数
+CameraCalibrate -> frontend : 提供相机参数
+ImageUndistort -> ImageUndistort : Undistort()
+ImageUndistort -> frontend : 返回去畸变图片
+ImageUndistort -> User : 允许用户保存图像到指定文件路径
+@enduml

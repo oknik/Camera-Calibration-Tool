@@ -1,0 +1,100 @@
+@startuml
+skinparam actorStyle awesome
+
+class CalculateCorner {
+    - std::vector<std::string> ImagePathVector; // 所有图片路径
+    - cv::Size BoardSize // 标定板大小，从Qt前端传回
+    - std::map<std::string, cv::Mat> FindProcessedImageByPath; // 依据上传的文件路径获得处理后的图像的字典
+    - std::map<std::string, std::vector<cv::Point2f>> FindCornersByPath; // 依据文件路径获取计算出的角点值的字典
+
+    + void SetBoardSize(cv::Size boardSize) // 更改图片标定板大小
+    + void AddImagePath(std::string imagePath) // 添加图片路径
+    + void RemoveImagePath(std::string imagePath) // 删除图片路径
+    + void ResetImagePathVector() // 重置图片路径列表
+    + bool CaptureImageFromCamera(std::string savePath, int cameraIndex) // 从摄像头捕获图像
+    + void DrawAxisOnChessBoard(cv::Mat image, std::vector<cv::Point2f> corners) // 绘制 XY 轴
+    + void CalculateSingleImageCorners(std::string imagePath, bool drawCorner, bool isFishEye) // 绘制特定图片角点
+    + void CalculateEveryImageCorners(bool drawCorner, bool isFishEye) // 绘制所有图片角点
+	+ std::vector<std::vector<cv::Point2f>> GetAllImageCorners();// 获取所有的角点图
+	+ std::map<std::string, std::vector<cv::Point2f>> GetImageCorner() const; // 返回字典，允许根据文件路径去找对应的某张图的角点信息
+	+ std::map<std::string, cv::Mat> GetProcessedImageByPath() const; // 返回字典，允许根据上传的文件路径找到处理后的角点图
+	+ std::vector<std::string> GetAllFilePaths() const; // 获取所有文件路径
+}
+
+class PointMapper {
+    - CalculateCorner CalculateCorner
+    - float SquareSize // 标定板格子大小
+    - cv::Size BoardSize 
+    - std::vector<cv::Point3f> RealWorldPoints // 真实坐标
+
+    + PointMapper(float squareSize, cv::Size boardSize)
+    + float GetSquareSize() const;
+	+ cv::Size GetBoardSize() const;
+	+ BoardType GetBoardType() const;
+    + std::vector<cv::Point3f> GenerateRealWorldPoints() // 生成世界坐标
+    + std::vector<cv::Point3f> GetRealWorldPoints() const // 获取世界坐标
+    + bool MapSingleImagePoint(std::vector<cv::Point2f>& imagePoints, std::vector<cv::Point3f>& worldPoints) // 判断特征点数量匹配
+}
+
+class CameraCalibrate {
+    - cv::Mat CameraMatrix // 相机内参矩阵
+    - cv::Mat DistCoeffs // 畸变参数
+    - std::vector<cv::Mat> RotationVectors // 旋转向量
+    - std::vector<cv::Mat> TranslationVectors // 平移向量
+
+    + CameraCalibrate()
+	+ void CalibrateStandardCamera(
+		std::vector<std::vector<cv::Point3f>> worldPoints,
+		std::vector<std::vector<cv::Point2f>> imagePoints,
+		cv::Size imageSize,
+		CalibrationOptions option
+	); // 针对多张照片，进行相机标定行为, 仅支持径向和切向方向选项
+	+ void CalibrateFishEyeCamera(
+		std::vector<std::vector<cv::Point3f>> worldPoints,
+		std::vector<std::vector<cv::Point2f>> imagePoints,
+		cv::Size imageSize,
+		CalibrationOptions option
+	); // 针对鱼眼相机标定, 仅支持Skew校正和参数优化
+    + void ExportCameraParameters(std::string outputFile, cv::Size imageSize) const; // 导出相机参数
+    + cv::Mat GetCameraMatrix() const // 返回相机内参矩阵
+    + cv::Mat GetDistCoeffs() const // 返回畸变参数
+    + std::vector<cv::Mat> GetRotationVectors() const // 返回旋转向量
+    + std::vector<cv::Mat> GetTranslationVectors() const // 返回平移向量
+}
+
+class ImageUndistort {
+    - cv::Mat CameraMatrix // 相机内参矩阵
+    - cv::Mat DistCoeffs // 畸变参数
+    - cv::Mat UndistortedImage // 去畸变后的图片
+
+    + ImageUndistort(cv::Mat cameraMatrix, cv::Mat distCoeffs)
+    + void Undistort(cv::Mat distortedImage, bool isFishEye) // 图像去畸变
+    + cv::Mat GetUndistortImage() const // 获取去畸变图片
+    + void SaveUndistortedImage(std::string outputPath) // 保存去畸变图片
+    + bool ValidateDistortionData() const // 检查畸变参数有效性
+}
+
+enum BoardType {
+    CHESSBOARD // 棋盘格
+    SYMMETRIC_CIRCLE_GRID // 对称圆形网格
+    ASYMMETRIC_CIRCLE_GRID // 非对称圆形网格
+}
+
+enum RadialDistortionType {
+    TWO_COEFFICIENTS // 使用 2 个径向畸变系数（K1, K2）
+    THREE_COEFFICIENTS // 使用 3 个径向畸变系数（K1, K2, K3）
+}
+
+class CalibrationOptions {
+    RadialDistortionType RadialDistortion = THREE_COEFFICIENTS
+    bool UseTangentialDistortion = false // 是否使用切向畸变
+    bool OptimizeParameters = false // 是否优化参数（初值已知时启用）
+    bool SkewEnabled = false // 是否允许斜度校正
+}
+
+CalibrationOptions o-- RadialDistortionType
+CalculateCorner --> PointMapper : 提供角点数据
+PointMapper --> CameraCalibrate : 提供世界坐标
+CameraCalibrate --> ImageUndistort : 提供标定结果
+@enduml
+

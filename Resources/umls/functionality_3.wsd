@@ -1,0 +1,32 @@
+@startuml
+
+title "找到每张照片的原点、XY轴、角点"
+
+actor User 
+participant QT as Frontend
+participant CalculateCorner
+
+User -> Frontend : 上传或选择图片
+Frontend -> CalculateCorner : 设置图片路径
+
+alt 单张图片的角点绘制
+    User -> Frontend : 选择绘制单张图片角点
+    Frontend -> CalculateCorner : 调用 CalculateSingleImageCorners()
+    CalculateCorner -> Frontend : 显示图片（含角点）
+    User -> Frontend : 关闭图片窗口
+end
+
+alt 批量图片角点绘制
+    User -> Frontend : 选择绘制所有图片角点
+    Frontend -> CalculateCorner : 调用 CalculateEveryImageCorners()
+    CalculateCorner -> Frontend : 显示图片（批量）]
+    User -> Frontend : 关闭图片窗口
+end
+
+alt 绘制 原点、XY轴、角点
+    User -> Frontend : 选择绘制
+    Frontend -> CalculateCorner : 调用 CalculateSingleImageCorners(drawImage=true)
+    CalculateCorner -> Frontend : 返回处理后的图片
+end
+
+@enduml

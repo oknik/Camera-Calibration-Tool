@@ -1,0 +1,38 @@
+@startuml
+
+title "添加图片"
+
+actor User 
+participant QT as Frontend
+participant CalculateCorner
+alt 用户从本机上传图片
+    User -> Frontend : 输入要上传的图片路径
+    Frontend -> CalculateCorner : 调用 AddImagePath() 或 RemoveImagePath()
+else 用户选择使用摄像头拍照
+    User -> Frontend : 选择 "本机拍照" 的选项
+    Frontend -> CalculateCorner : 调用 CaptureImageFromCamera()
+    CalculateCorner -> Frontend : 返回拍照结果(成功/失败)
+end
+
+
+' 定义类 CalculateCorner
+' class CalculateCorner {
+'     + void AddImagePath
+'     + void RemoveImagePath
+'     + void ResetImagePathVector
+'     + void SetBoardSize
+
+'     + bool CaptureImageFromCamera
+'     + void DrawAxisOnChessBoard
+'     + void CalculateSingleImageCorners
+'     + void CalculateEveryImageCorners
+
+'     + std::vector<std::vector<cv::Point2f>> GetAllImageCorners
+'     + std::map<std::string, std::vector<cv::Point2f>> GetImageCorner
+'     + std::map<std::string, cv::Mat> GetProcessedImageByPath
+'     + std::vector<std::string> GetAllFilePaths
+' }
+
+
+
+@enduml

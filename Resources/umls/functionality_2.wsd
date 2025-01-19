@@ -1,0 +1,12 @@
+@startuml
+actor User
+participant QT前端 as frontend
+participant 应用程序 as app 
+
+User -> frontend: 选择标定板样式、大小
+frontend -> app: PointMapper.SetSquareSize() 设置每格大小
+frontend -> app: PointMapper.SetBoardType() 设置标定板样式
+frontend -> app: PointMapper.SetBoardSize() 设置标定板大小
+
+
+@enduml
