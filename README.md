@@ -14,6 +14,6 @@ This is a camera calibration tool developed using Qt 5.15 and C++. It supports b
 - **UnitTest**: Contains unit tests used to validate the correctness and functionality of the code.
 
 ## Notes
-- Due to the inclusion of large DLL and SO files, they cannot be uploaded to GitHub, so the project cannot be run directly. To run the project, the code in the `Source-Code` folder need to be compiled into DLL (on Windows) and SO (on Linux) files, which should then be added to the Qt project. 
+- Since large DLL and SO files cannot be uploaded to GitHub, the project cannot be run directly. To run the project, the code in the `Source-Code` folder need to be compiled into DLL (on Windows) and SO (on Linux) files, which should then be added to the Qt project. 
 - OpenCV 4.10.0 library is required and should be added to the project for image processing functionalities. 
 
